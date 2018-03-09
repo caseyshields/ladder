@@ -1,7 +1,7 @@
 /* Factory function which returns a d3 component for drawing ladder diagrams */
 function createLadder( svg, id, left, top, width, height ) {
     
-    let time, interval;
+    let time, interval; // the interval of time being plotted
     let sources = []; // the legs of the ladder
     let events = []; // the rungs of the ladder
 
@@ -26,19 +26,21 @@ function createLadder( svg, id, left, top, width, height ) {
         .range( [0, width] );
     let timeAxis = d3.axisBottom( timeScale )
         .tickSize( height );
-        // todo add a high precision time formatter
+    // TODO add a high precision time formatter
+    // we may want to customize the axis by selecting and modifying the axis after its creation- though this strikes me as more inefficient...
     
-    // Create the source axis
+    // Create the source scale
     let sourceScale = d3.scaleBand()
         .range( [height, 0] )
         .round( true )
         .paddingInner( 0.5 );
-    // let sourceAxis = d3.axisRight( soureScale )
-    //     .tickSize( width );
-    // // we may want to customize the axis by selecting and modifying the axis after its creation- though this strikes me as more inefficient...
+    // consider making a color scale for a fallback if styling information is missing...
 
     let ladder = function() { //todo make this accept a selection? 
         
+        // draw the time axis
+        axis.call( timeAxis );
+
         // join with the source data set
         legs = legs.data( sources );
 
@@ -50,17 +52,22 @@ function createLadder( svg, id, left, top, width, height ) {
             .append( 'g' )
             .attr('class', function(d) {return d.class;} );
 
+        let band = sourceScale.bandwidth();
+        let pad = sourceScale.paddingInner();
+        let font = band*0.75;
+
         entered.append( 'rect' )
             .attr( 'x', left )
             .attr( 'y', function(d) {return sourceScale(d.id);} )
             .attr( 'width', width )
-            .attr( 'height', sourceScale.bandwidth() );
+            .attr( 'height', band );
 
         entered.append( 'text' )
             .text( function(d) {return d.id;} )
             .attr( 'anchor', 'start' )
-            .attr( 'x', left )
-            .attr( 'y', function(d) {return sourceScale(d.id);} );
+            .attr( 'font-size', font )
+            .attr( 'x', left + font )
+            .attr( 'y', function(d) {return sourceScale(d.id) + font;} );
         
         // update all sources
         legs = entered.merge( legs );
@@ -69,14 +76,21 @@ function createLadder( svg, id, left, top, width, height ) {
             //     .on('drag', dragged)
             //     .on('end', ended)
             // ); // TODO filter or highlight on source selection? Allow re-ordering?
+
+        // TODO draw rungs, labeling them by ID if they are large enough...
     }
 
     ladder.sources = function( newSources ) {
+        // setter / getter
         if (!newSources) return sources;
         sources = newSources;
+
+        // update the source scale's domain
         let ids = [];
         newSources.forEach( function(d){ids.push(d.id);} );
         sourceScale.domain( ids );
+
+        // return the ladder to allow chaining
         return ladder;
     }
 
@@ -86,6 +100,11 @@ function createLadder( svg, id, left, top, width, height ) {
         return ladder;
     }
 
+    ladder.time = function( t ) {
+        if (!t) return time;
+        time = t;
+        // todo remove events which have timed out
+    }
     return ladder;
 }
 /* the ladder svg will look something like;
