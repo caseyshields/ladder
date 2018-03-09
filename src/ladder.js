@@ -107,18 +107,3 @@ function createLadder( svg, id, left, top, width, height ) {
     }
     return ladder;
 }
-/* the ladder svg will look something like;
-<g class="ladder">
-<g id="timeAxis"></g>
-    <g id="legs">
-        <g class="...some ip">
-            <rect />
-            <text />
-        </g>
-        ...
-    </g>
-    <g id="rungs">
-        <path class="...some protocol">
-        ...
-    </g>
-</g>*/

@@ -3,33 +3,36 @@
     <head>
         <title>Ladder Diagram Test</title>
         <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-        <style>
-            .technician {
-                fill: #ffffcc;
-            }
-            .mechanic {
-                fill: #c7e9b4;
-            }
-            .engineer {
-                fill: #7fcdbb;
-            }
-            .supervisor {
-                fill: #41b6c4;
-            }
-            .representative {
-                fill: #2c7fb8;
-            }
-            .customer {
-                fill: #253494;
-            } /*http://colorbrewer2.org/#type=sequential&scheme=YlGnBu&n=6*/
+        <style> /*http://colorbrewer2.org/#type=sequential&scheme=YlGnBu&n=6*/
             #legs rect { stroke: none; }
-            #legs text { fill: #888; stroke: none; font-family: monospace }
-        </style> <!--link href="../test.css" rel="stylesheet" /-->
+            #legs text {
+                fill: #888;
+                stroke: none;
+                font-family: sans-serif;
+                font-weight: bold;
+            }
+            .technician { fill: #ffffcc; }
+            .mechanic { fill: #c7e9b4; }
+            .engineer { fill: #7fcdbb; }
+            .supervisor { fill: #41b6c4; }
+            .representative { fill: #2c7fb8; }
+            .customer { fill: #253494; }
+            
+            #rungs rect { stroke: none; }
+            #rungs text {
+                fill: #BBB;
+                stroke: none;
+                font-family: sans-serif;
+                font-weight: bold;
+            }
+            .request { fill: darkgoldenrod; }
+            .accept { fill: darkgreen; }
+            .reject { fill: darkred; }
+            /* TODO I should use two different mono hues for both source and protocols...*/
+        </style>
     </head>
     <body>
-        <svg width="500" height="500">
-
-        </svg>
+        <svg width="1000" height="300"></svg>
         <script src="https://d3js.org/d3.v4.js"></script>
         <script src="../src/ladder.js"></script>
         <script type="text/javascript">
@@ -42,14 +45,68 @@
                 { id:'Eric', class:"representative" },
                 { id:'Fanny', class:"customer" }
             ];
-            events = []; // todo create timer which generates messages
-            
+            events = [
+                {class: 'request', source: 'Alice', target: 'Bob', origin:'Alice'}
+            ];
+
+            let getSuperior = function ( name ) {
+                let n = sources.findIndex( function(d) {return d.id==name;} );
+                return (n!=-1 && n!=sources.length-1) ? sources[n+1] : null;
+            };
+
+            let getSubordinate = function( name ) {
+                let n = sources.findIndex( function(d) {return d.id==name;} );
+                return (n!=-1 && n!=0) ? sources[n-1] : null;
+            }
+
             let svg = d3.selectAll('svg');
-            let ladder = createLadder( svg, 'test', 0, 0, 500, 300)
+            let ladder = createLadder( svg, 'test', 0, 0, 1000, 300)
                 .sources( sources )
                 .events ( events );
-
             ladder();
+
+            // A little generator that simulates requests in a chain of command
+            d3.timeout( function() {
+                let last = events[events.length-1];
+                let event = null;
+                
+                // if a request hasn't been answered
+                if (last.class=='request') {
+                    
+                    // half the time the superior knows the answer, Fanny always knows the answer
+                    if (Math.random()<0.5 || last.target=='Fanny') {
+                        // 3/4ths the time the answer is permissive
+                        if(Math.random()<0.75)
+                            event = { class:'accept', source:last.target, target:last.source, origin:last.origin };
+                        else
+                            event = { class:'reject', source:last.target, target:last.source, origin:last.origin };
+                    }
+                    // otherwise they pass it up the chain
+                    else {
+                        superior = getSuperior( last.target );
+                        event = { class:'request', source:last.target, target:superior.id, origin:last.origin };
+                    }
+
+                // pass answers back down the chain of command
+                } else {
+                    // if the originator hasn't recieved the answer, pass it to the subordinate
+                    if (last.target!=last.origin) {
+                        let subordinate = getSubordinate( last.target );
+                        event = { class:last.class, source:last.target, target:subordinate.id, origin:last.origin};
+                    }
+                    // otherwise randomly generate a new request
+                    else {
+                        let origin = sources[ Math.random()*(sources.length-1) ];
+                        let superior = getSuperior( origin.id );
+                        event = { class:'request', source: origin.id, target:superior.id, origin:origin.id};
+                    }
+                }
+                
+                // add the message and update the diagram...
+                events.push( event );
+                ladder();
+            }, 1000);
+            
         </script>
     </body>
 </html>
