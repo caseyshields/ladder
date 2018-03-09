@@ -18,21 +18,21 @@
             .representative { fill: #2c7fb8; }
             .customer { fill: #253494; }
             
-            #rungs rect { stroke: none; }
+            #rungs path { fill: none; stroke-width: 5px; }
             #rungs text {
                 fill: #BBB;
                 stroke: none;
                 font-family: sans-serif;
                 font-weight: bold;
             }
-            .request { fill: darkgoldenrod; }
-            .accept { fill: darkgreen; }
-            .reject { fill: darkred; }
+            .request { stroke: goldenrod; }
+            .accept { stroke: green; }
+            .reject { stroke: red; }
             /* TODO I should use two different mono hues for both source and protocols...*/
         </style>
     </head>
     <body>
-        <svg width="1000" height="300"></svg>
+        <svg width="1000" height="400"></svg>
         <script src="https://d3js.org/d3.v4.js"></script>
         <script src="../src/ladder.js"></script>
         <script type="text/javascript">
@@ -46,7 +46,7 @@
                 { id:'Fanny', class:"customer" }
             ];
             events = [
-                {class: 'request', source: 'Alice', target: 'Bob', origin:'Alice'}
+                {time:0, class: 'request', source: 'Alice', target: 'Bob', origin:'Alice'}
             ];
 
             let getSuperior = function ( name ) {
@@ -66,10 +66,12 @@
             ladder();
 
             // A little generator that simulates requests in a chain of command
-            d3.timeout( function() {
+            d3.interval( function(elapsed) {
                 let last = events[events.length-1];
                 let event = null;
                 
+                let t = last.time + 1;//elapsed //d3.now();
+
                 // if a request hasn't been answered
                 if (last.class=='request') {
                     
@@ -77,14 +79,14 @@
                     if (Math.random()<0.5 || last.target=='Fanny') {
                         // 3/4ths the time the answer is permissive
                         if(Math.random()<0.75)
-                            event = { class:'accept', source:last.target, target:last.source, origin:last.origin };
+                            event = { time:t, class:'accept', source:last.target, target:last.source, origin:last.origin };
                         else
-                            event = { class:'reject', source:last.target, target:last.source, origin:last.origin };
+                            event = { time:t, class:'reject', source:last.target, target:last.source, origin:last.origin };
                     }
                     // otherwise they pass it up the chain
                     else {
                         superior = getSuperior( last.target );
-                        event = { class:'request', source:last.target, target:superior.id, origin:last.origin };
+                        event = { time:t, class:'request', source:last.target, target:superior.id, origin:last.origin };
                     }
 
                 // pass answers back down the chain of command
@@ -92,19 +94,22 @@
                     // if the originator hasn't recieved the answer, pass it to the subordinate
                     if (last.target!=last.origin) {
                         let subordinate = getSubordinate( last.target );
-                        event = { class:last.class, source:last.target, target:subordinate.id, origin:last.origin};
+                        event = { time:t, class:last.class, source:last.target, target:subordinate.id, origin:last.origin};
                     }
                     // otherwise randomly generate a new request
                     else {
-                        let origin = sources[ Math.random()*(sources.length-1) ];
+                        let r = Math.floor(Math.random()*(sources.length-1));
+                        let origin = sources[ r ];
                         let superior = getSuperior( origin.id );
-                        event = { class:'request', source: origin.id, target:superior.id, origin:origin.id};
+                        event = { time:t, class:'request', source: origin.id, target:superior.id, origin:origin.id};
                     }
                 }
                 
                 // add the message and update the diagram...
                 events.push( event );
+                ladder.events( events );
                 ladder();
+                
             }, 1000);
             
         </script>
