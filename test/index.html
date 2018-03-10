@@ -18,7 +18,10 @@
             .representative { fill: #2c7fb8; }
             .customer { fill: #253494; }
             
-            #rungs path { fill: none; stroke-width: 5px; }
+            #rungs path {
+                fill: none;
+                stroke-width: 3px;
+            }
             #rungs text {
                 fill: #BBB;
                 stroke: none;
@@ -70,7 +73,7 @@
                 let last = events[events.length-1];
                 let event = null;
                 
-                let t = last.time + 1;//elapsed //d3.now();
+                let t = last.time + 1 + Math.random()*8;//elapsed //d3.now();
 
                 // if a request hasn't been answered
                 if (last.class=='request') {

@@ -9,17 +9,17 @@ function createLadder( svg, id, left, top, width, height ) {
     let group = svg.append('g')
         .attr( 'id', id )
         .attr( 'class', 'ladder' );
-
-    let axis = group.append( 'g' )
-        .attr( 'id', 'axis' );
     
     let legs = group.append( 'g' )
         .attr( 'id', 'legs' )
         .selectAll('g');
-    
+
     let rungs = group.append( 'g' )
         .attr( 'id', 'rungs' )
         .selectAll('g');
+
+    let axis = group.append( 'g' )
+        .attr( 'id', 'axis' );
 
     // create the time axis
     let timeScale = d3.scaleLinear()
@@ -33,7 +33,7 @@ function createLadder( svg, id, left, top, width, height ) {
     let sourceScale = d3.scaleBand()
         .range( [height, 0] )
         .round( true )
-        .paddingInner( 0.5 );
+        .paddingInner( 0.75 );
     // consider making a color scale for a fallback if styling information is missing...
 
     /** Creates or updates a ladder diagram in the svg supplied at creation.
