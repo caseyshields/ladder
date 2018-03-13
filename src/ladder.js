@@ -21,6 +21,19 @@ function createLadder( svg, id, left, top, width, height ) {
     let axis = group.append( 'g' )
         .attr( 'id', 'axis' );
 
+    // create a definition for the rung path's markers
+    svg.append('svg:defs').selectAll("marker")
+        .data(["end"]).enter().append("svg:marker")
+        .attr('id', String)
+        .attr('viewBox', '0 -5 10 10') // where the arrow is drawn
+        .attr('refX', 10)
+        .attr('refY', -0.5) // offset from end of path
+        .attr('markerWidth', 6)
+        .attr('markerHeight', 6)
+        .attr('orient', 'auto')
+        .append("svg:path")
+        .attr('d', 'M0,-5L10,0L0,5');
+
     // create the time axis
     let timeScale = d3.scaleLinear()
         .range( [0, width] );
@@ -59,7 +72,8 @@ function createLadder( svg, id, left, top, width, height ) {
         let band = sourceScale.bandwidth();
         let pad = sourceScale.paddingInner();
         let font = band*0.75;
-        let center = band*0.5;
+        let b = band / 2.0; // band half-width
+        let r = band / 2.0; // rung half-width
 
         // draw a rectangle for the background of each timeline
         newLegs.append( 'rect' )
@@ -92,15 +106,27 @@ function createLadder( svg, id, left, top, width, height ) {
         let newRungs = rungs.enter()
             .append( 'path' )
             .attr( 'class', function(d) {return d.class;} );
-        // TODO conditionally add labels with the message id?
+        // should we conditionally add labels with the message id when there is very little data?
 
         rungs = newRungs.merge( rungs )
             .attr( 'd', function(d) {
                 let x = Math.round(timeScale(d.time));
-                let y1 = sourceScale(d.source) + center;
-                let y2 = sourceScale(d.target) + center;
-                return `M ${x},${y1} V ${y2}`;
+                let y1 = sourceScale(d.source);
+                let y2 = sourceScale(d.target);
+                if (y1<y2) // down
+                    return `M${x-r},${y1+band} V${y2} L${x},${y2+b} L${x+r},${y2} V${y1+band} Z`;
+                else // up
+                    return `M${x-r},${y1} V${y2+band} L${x},${y2+b} L${x+r},${y2+band} V${y1} Z`;
             } );
+        // rungs = newRungs.merge( rungs )
+            //.attr('marker-end', 'url(#end)')
+            // .attr( 'd', function(d) {
+            //     let x = Math.round(timeScale(d.time));
+            //     let y1 = sourceScale(d.source) + center;
+            //     let y2 = sourceScale(d.target) + center;
+            //     return `M ${x},${y1} V ${y2}`;
+            // } ); // this method uses a line with a cap; we should investigate it if the DOM gets too big...
+            
     }
 
     /** If an argument isn't supplied, returns the current set of sources.
