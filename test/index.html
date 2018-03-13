@@ -18,26 +18,11 @@
             .representative { fill: #2c7fb8; }
             .customer { fill: #253494; }
             
-            #rungs path {
-                stroke: none;
-            }
+            #rungs path { stroke: none; }
             .request { fill: goldenrod; }
             .accept { fill: green; }
             .reject { fill: red; }
-            /* #rungs path {
-                fill: none;
-                stroke-width: 8px;
-                stroke-linecap: round;
-            }
-            #rungs text {
-                fill: #BBB;
-                stroke: none;
-                font-family: sans-serif;
-                font-weight: bold;
-            }
-            .request { stroke: goldenrod; }
-            .accept { stroke: green; }
-            .reject { stroke: red; } */
+            
             /* TODO I should use two different mono hues for both source and protocols...*/
         </style>
     </head>
@@ -108,9 +93,11 @@
                     }
                     // otherwise randomly generate a new request
                     else {
-                        let r = Math.floor(Math.random()*(sources.length-1));
-                        let origin = sources[ r ];
-                        let superior = getSuperior( origin.id );
+                        let r1 = Math.floor(Math.random()*(sources.length-1));
+                        let origin = sources[ r1 ];
+                        let r2 = r1 +1 + Math.floor(Math.random()*(sources.length-r1-1));
+                        let superior = sources[ r2 ];
+                        //let superior = getSuperior( origin.id );
                         event = { time:t, class:'request', source: origin.id, target:superior.id, origin:origin.id};
                     }
                 }

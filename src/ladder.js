@@ -21,19 +21,6 @@ function createLadder( svg, id, left, top, width, height ) {
     let axis = group.append( 'g' )
         .attr( 'id', 'axis' );
 
-    // create a definition for the rung path's markers
-    svg.append('svg:defs').selectAll("marker")
-        .data(["end"]).enter().append("svg:marker")
-        .attr('id', String)
-        .attr('viewBox', '0 -5 10 10') // where the arrow is drawn
-        .attr('refX', 10)
-        .attr('refY', -0.5) // offset from end of path
-        .attr('markerWidth', 6)
-        .attr('markerHeight', 6)
-        .attr('orient', 'auto')
-        .append("svg:path")
-        .attr('d', 'M0,-5L10,0L0,5');
-
     // create the time axis
     let timeScale = d3.scaleLinear()
         .range( [0, width] );
@@ -49,10 +36,16 @@ function createLadder( svg, id, left, top, width, height ) {
         .paddingInner( 0.75 );
     // consider making a color scale for a fallback if styling information is missing...
 
+    // add ability to scale and pan ladder
+    let zoom = d3.zoom()
+        .on("zoom", resizeBand)
+        .scaleExtent( [1,20] );
+    // do we want to add a summary view with just traffic volume information?
+
     /** Creates or updates a ladder diagram in the svg supplied at creation.
      * The set of sources will be shown as the annotated legs of the ladder.
      * Events will be represented as ladder rungs.*/
-    let ladder = function() { //todo make this accept a selection? 
+    let ladder = function() { //TODO make this accept a selection? 
         
         // draw the time axis
         axis.call( timeAxis );
@@ -66,7 +59,10 @@ function createLadder( svg, id, left, top, width, height ) {
         // Add groups for each source, classed so it can be styled in CSS
         let newLegs = legs.enter()
             .append( 'g' )
-            .attr('class', function(d) {return d.class;} );
+            .attr('class', function(d) {return d.class;} )
+            .style("pointer-events", "all")
+            .style("cursor", "zoom")
+            .call( zoom );
 
         // figure out some dimensions
         let band = sourceScale.bandwidth();
@@ -90,13 +86,25 @@ function createLadder( svg, id, left, top, width, height ) {
             .attr( 'x', left + font )
             .attr( 'y', function(d) {return sourceScale(d.id) + font;} );
         
+        // now update dimensions of pre-existing sources
+        legs.selectAll( 'rect' )
+            .attr( 'x', left )
+            .attr( 'y', function(d) {return sourceScale(d.id);} )
+            .attr( 'width', width )
+            .attr( 'height', band );
+
+        legs.selectAll( 'text' ) // is this nested selecting performant?
+            .attr( 'font-size', font )
+            .attr( 'x', left + font )
+            .attr( 'y', function(d) {return sourceScale(d.id) + font;} );
+
         // merge the selections back together so it is ready for the next render
         legs = newLegs.merge( legs );
-            // .call( d3.drag()
+            //.call( d3.drag()
             //     .on('start', started)
             //     .on('drag', dragged)
             //     .on('end', ended)
-            // ); // TODO filter or highlight on source selection? Allow re-ordering?
+            //); // TODO filter or highlight on source selection? Allow re-ordering?
 
         // Draw rungs for all the messages using the same update pattern above
         rungs = rungs.data( events );
@@ -118,15 +126,25 @@ function createLadder( svg, id, left, top, width, height ) {
                 else // up
                     return `M${x-r},${y1} V${y2+band} L${x},${y2+b} L${x+r},${y2+band} V${y1} Z`;
             } );
-        // rungs = newRungs.merge( rungs )
-            //.attr('marker-end', 'url(#end)')
-            // .attr( 'd', function(d) {
-            //     let x = Math.round(timeScale(d.time));
-            //     let y1 = sourceScale(d.source) + center;
-            //     let y2 = sourceScale(d.target) + center;
-            //     return `M ${x},${y1} V ${y2}`;
-            // } ); // this method uses a line with a cap; we should investigate it if the DOM gets too big...
             
+    }
+
+    /** Private D3 event listener method for resizing ladder diagram component proportions. */
+    function resizeBand( data, index, selection ) {
+        // update the source scale's padding
+        let density = sourceScale.paddingInner();
+        let dW = d3.event.sourceEvent.deltaY;
+        if (dW>0) {
+            if (density<0.95)
+                density += 0.05;
+        } else if (dW<0) {
+            if (density>0.05)
+                density -= 0.05;
+        }
+        sourceScale.paddingInner( density );
+
+        // re-render
+        ladder();
     }
 
     /** If an argument isn't supplied, returns the current set of sources.
