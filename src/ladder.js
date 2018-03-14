@@ -1,5 +1,6 @@
-/* Factory function which returns a d3 component for drawing ladder diagrams */
-function createLadder( svg, id, left, top, width, height ) {
+
+/** Factory function which returns a d3 component for drawing ladder diagrams */
+function createLadder( svg, id, left, top, width, height, readout ) {
     
     let time, interval; // the interval of time being plotted
     let sources = []; // the legs of the ladder
@@ -83,7 +84,7 @@ function createLadder( svg, id, left, top, width, height ) {
             .text( function(d) {return d.id;} )
             .attr( 'anchor', 'start' )
             .attr( 'font-size', font )
-            .attr( 'x', left + font )
+            .attr( 'x', left )//+ font )
             .attr( 'y', function(d) {return sourceScale(d.id) + font;} );
         
         // now update dimensions of pre-existing sources
@@ -95,7 +96,7 @@ function createLadder( svg, id, left, top, width, height ) {
 
         legs.selectAll( 'text' ) // is this nested selecting performant?
             .attr( 'font-size', font )
-            .attr( 'x', left + font )
+            .attr( 'x', left )//+ font )
             .attr( 'y', function(d) {return sourceScale(d.id) + font;} );
 
         // merge the selections back together so it is ready for the next render
@@ -125,7 +126,8 @@ function createLadder( svg, id, left, top, width, height ) {
                     return `M${x-r},${y1+band} V${y2} L${x},${y2+b} L${x+r},${y2} V${y1+band} Z`;
                 else // up
                     return `M${x-r},${y1} V${y2+band} L${x},${y2+b} L${x+r},${y2+band} V${y1} Z`;
-            } );
+            } ).call( readout );
+        // if we change it to work from band centerline to centerline it might alleviate some complexity
             
     }
 

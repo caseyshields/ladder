@@ -23,6 +23,13 @@
             .accept { fill: green; }
             .reject { fill: red; }
             
+            .readout {
+                font-size: 15px;
+                font-family: sans-serif;
+                background-color: white;
+                border-radius: 15px;
+                padding: 15px;
+            }
             /* TODO I should use two different mono hues for both source and protocols...*/
         </style>
     </head>
@@ -30,6 +37,7 @@
         <svg width="1000" height="400"></svg>
         <script src="https://d3js.org/d3.v4.js"></script>
         <script src="../src/ladder.js"></script>
+        <script src="../src/readout.js"></script>
         <script type="text/javascript">
 
             sources = [
@@ -55,7 +63,8 @@
             }
 
             let svg = d3.selectAll('svg');
-            let ladder = createLadder( svg, 'test', 0, 0, 1000, 300)
+            let readout = createReadout();
+            let ladder = createLadder( svg, 'test', 0, 0, 1000, 300, readout)
                 .sources( sources )
                 .events ( events );
             ladder();
@@ -107,7 +116,7 @@
                 ladder.events( events );
                 ladder();
                 
-            }, 1000);
+            }, 5000);
             
         </script>
     </body>
