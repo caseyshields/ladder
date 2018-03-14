@@ -1,10 +1,7 @@
 /** Factory function for a detail pop-up which shows a json serialization of objects it's listening to. */
 function createReadout( ) {
 
-    // Embed a div inside the SVG
-    // let embed = svg.append('foreignobject')
-    //     .attr('class', 'node');
-    // let div = embed.append( 'div' )
+    // add a div for the actual tooltip
     let div = d3.select('body').append('div')
         .attr('class', 'readout') // for easy css styling
         .style('position', 'absolute') // the readout is absolutel positioned
@@ -12,8 +9,7 @@ function createReadout( ) {
 
     /** formats the mapped data  */
     let tohtml = function( d ) {
-        // TODO format the json
-        return JSON.stringify( d );
+        return JSON.stringify( d, null, '<br>' );
     }
     
     /** Adds a listener to every item in the selection, which will display a readout on mouse over. */
