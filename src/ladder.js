@@ -61,8 +61,12 @@ function createLadder( svg, id, left, top, width, height, readout ) {
         let newLegs = legs.enter()
             .append( 'g' )
             .attr('class', function(d) {return d.class;} )
-            .style("pointer-events", "all")
+            //.style("pointer-events", "all")
             .style("cursor", "zoom")
+            .call( d3.drag()
+                .on('start', started)
+                .on('drag', dragged)
+                .on('end', ended) )
             .call( zoom );
 
         // figure out some dimensions
@@ -131,7 +135,23 @@ function createLadder( svg, id, left, top, width, height, readout ) {
             
     }
 
-    /** Private D3 event listener method for resizing ladder diagram component proportions. */
+    // callbacks for source dragging
+    function started(d) {
+        let g = d3.select(this);
+        g.raise().classed('dragging', true);
+        console.log(d);
+    }
+    function dragged(d) {
+        let g = d3.select(this);
+        let rect = g.select('rect');
+        rect.attr('y', d3.event.y);
+    }
+    function ended(d) {
+        let g = d3.select(this);
+        g.classed('dragging', false);
+    }
+
+    /** Mouse wheel callback for resizing ladder diagram proportions. */
     function resizeBand( data, index, selection ) {
         // update the source scale's padding
         let density = sourceScale.paddingInner();
@@ -180,12 +200,6 @@ function createLadder( svg, id, left, top, width, height, readout ) {
         return ladder;
     }
 
-    /** sets the method used to access sources' ids */
-    ladder.id = function(d) { return d.id; }
-
-    /** sets the method used to access events' time */
-    ladder.time = function(d) {return d.time; }
-
     /** if an argument isn't supplied, returns the current time.
      * Otherwise sets the time and returns the ladder object for chaining. */
     ladder.currentTime = function( t ) {
@@ -193,6 +207,26 @@ function createLadder( svg, id, left, top, width, height, readout ) {
         time = t;
         // todo remove events which have timed out
     }
+
+    // While ommiting this will make the component less flexible, we control the data so there's no point in this extra indirection for us...
+    // /** Sets the method used to access sources' ids. */
+    // ladder.id = function(f) {
+    //     if (!f) return getId;
+    //     else getId = f;
+    //     return ladder;
+    // }
+    // //private default accessor for source id
+    // let getId = function(source) { return source.id; }
+
+    // /** sets the method used to access events' time */
+    // ladder.time = function(f) {
+    //     if (!f) return getTime;
+    //     else getTime = f;
+    //     return ladder;
+    // }
+    // // private default accessor for event's time
+    // let getTime = function(event) { return event.time; }
+    // // TODO should we have similar customizability for event source and target?
 
     return ladder;
 }
