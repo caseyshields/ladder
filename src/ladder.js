@@ -2,7 +2,7 @@
 /** Factory function which returns a d3 component for drawing ladder diagrams */
 function createLadder( svg, id, left, top, width, height, readout ) {
     
-    let time, interval; // the interval of time being plotted
+    let time, duration; // the interval of time being plotted
     let sources = []; // the legs of the ladder
     let events = []; // the rungs of the ladder
 
@@ -28,7 +28,6 @@ function createLadder( svg, id, left, top, width, height, readout ) {
     let timeAxis = d3.axisBottom( timeScale )
         .tickSize( height );
     // TODO add a high precision time formatter
-    // we may want to customize the axis by selecting and modifying the axis after its creation- though this strikes me as more inefficient...
     
     // Create the source scale
     let sourceScale = d3.scaleBand()
@@ -61,7 +60,6 @@ function createLadder( svg, id, left, top, width, height, readout ) {
         let newLegs = legs.enter()
             .append( 'g' )
             .attr('class', function(d) {return d.class;} )
-            //.style("pointer-events", "all")
             .style("cursor", "zoom")
             .call( d3.drag()
                 .on('start', started)
@@ -119,7 +117,6 @@ function createLadder( svg, id, left, top, width, height, readout ) {
         let newRungs = rungs.enter()
             .append( 'path' )
             .attr( 'class', function(d) {return d.class;} );
-        // should we conditionally add labels with the message id when there is very little data?
 
         rungs = newRungs.merge( rungs )
             .attr( 'd', function(d) {
@@ -137,7 +134,7 @@ function createLadder( svg, id, left, top, width, height, readout ) {
 
     // callbacks for source dragging
     function started(d) {
-        let g = d3.select(this);
+        let g = d3.select(this);// this is the current DOM element
         g.raise().classed('dragging', true);
         console.log(d);
     }
@@ -169,6 +166,14 @@ function createLadder( svg, id, left, top, width, height, readout ) {
         ladder();
     }
 
+    /** D3 style chaining, setter/getter */
+    ladder.interval = function( i ) {
+        if (!i)
+            return duration;
+        duration = i;
+        return ladder;
+    }
+
     /** If an argument isn't supplied, returns the current set of sources.
      * Otherwise sets the sources and returns the ladder object for chaining. */
     ladder.sources = function( newSources ) {
@@ -186,18 +191,40 @@ function createLadder( svg, id, left, top, width, height, readout ) {
     }
 
     /** if an argument isn't supplied, returns the current set of events.
-     * Otherwise sets the events and returns the ladder object for chaining. */
+     * Otherwise sets the events and returns the ladder object for chaining.
+     * Sets the time and interval to match the given data. */
     ladder.events = function( newEvents ) {
         if (!newEvents) return events;
         events = newEvents;
 
         // update time scale's domain
-        if (events.length>0)
-            timeScale.domain( [events[0].time, events[events.length-1].time] );
-        else
+        if (events.length>0) {
+            time = events[events.length-1].time;
+            duration = time - events[0].time;
+            timeScale.domain( [events[0].time, time] );
+        }
+        else {
+            time = 1;
+            duration = 1;
             timeScale.domain( [0.0, 1.0] );
+        }
 
         return ladder;
+    }
+
+    /** Adds the given events to the buffer, updates time, then removes expired events. */
+    ladder.add = function( event ) {
+        // add the given event
+        events.push(event);
+
+        // update time scale's domain
+        time = event.time;
+        let expire = time-duration;
+        timeScale.domain( [expire, time] );//[events[0].time, events[events.length-1].time] );
+
+        // remove expired events
+        while (events.length > 0 && events[0].time < expire)
+            events.shift();
     }
 
     /** if an argument isn't supplied, returns the current time.

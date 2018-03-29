@@ -69,7 +69,8 @@
             let readout = createReadout();
             let ladder = createLadder( svg, 'test', 0, 0, 1000, 300, readout)
                 .sources( sources )
-                .events ( events );
+                .events ( events )
+                .interval( 100 );
             ladder();
 
             // A little generator that simulates requests in a chain of command
@@ -115,11 +116,12 @@
                 }
                 
                 // add the message and update the diagram...
-                events.push( event );
-                ladder.events( events );
+                // events.push( event );
+                // ladder.events( events );
+                ladder.add( event );
                 ladder();
                 
-            }, 5000);
+            }, 1000);
             
         </script>
     </body>
