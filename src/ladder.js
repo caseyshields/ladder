@@ -115,10 +115,10 @@ function createLadder( svg, id, left, top, width, height, readout ) {
         rungs.exit().remove();
 
         let newRungs = rungs.enter()
-            .append( 'path' )
-            .attr( 'class', function(d) {return d.class;} );
+            .append( 'path' );
 
         rungs = newRungs.merge( rungs )
+            .attr( 'class', function(d) {return d.class;} )
             .attr( 'd', function(d) {
                 let x = Math.round(timeScale(d.time));
                 let y1 = sourceScale(d.source);
@@ -128,8 +128,7 @@ function createLadder( svg, id, left, top, width, height, readout ) {
                 else // up
                     return `M${x-r},${y1} V${y2+band} L${x},${y2+b} L${x+r},${y2+band} V${y1} Z`;
             } ).call( readout );
-        // if we change it to work from band centerline to centerline it might alleviate some complexity
-            
+        // might consider id'ing rungs 
     }
 
     // callbacks for source dragging
