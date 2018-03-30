@@ -1,5 +1,7 @@
 
-/** Factory function which returns a d3 component for drawing ladder diagrams */
+/** Factory function which returns a d3 component for drawing ladder diagrams.
+ * Sources are expected to have 'id' and 'class' attributes.
+ * Events are expected to have 'class', 'source', and 'target' attributes. */
 function createLadder( svg, id, left, top, width, height, readout ) {
     
     let time, duration; // the interval of time being plotted
@@ -33,20 +35,29 @@ function createLadder( svg, id, left, top, width, height, readout ) {
     let sourceScale = d3.scaleBand()
         .range( [height, 0] )
         .round( true )
-        .paddingInner( 0.75 );
+        .paddingInner( 0.70 )
+        .align( 0.0 );
     // consider making a color scale for a fallback if styling information is missing...
 
     // add ability to scale and pan ladder
     let zoom = d3.zoom()
         .on("zoom", resizeBand)
-        .scaleExtent( [1,20] );
-    // do we want to add a summary view with just traffic volume information?
+        .scaleExtent( [0.1, 0.9] );
 
     /** Creates or updates a ladder diagram in the svg supplied at creation.
      * The set of sources will be shown as the annotated legs of the ladder.
      * Events will be represented as ladder rungs.*/
     let ladder = function() { //TODO make this accept a selection? 
         
+        // update time domain
+        let expire = time - duration;
+        timeScale.domain( [expire, time] );
+
+        // remove expired events
+        while (events.length > 0
+                && events[0].time < expire)
+            events.shift();
+
         // draw the time axis
         axis.call( timeAxis );
 
@@ -64,8 +75,7 @@ function createLadder( svg, id, left, top, width, height, readout ) {
             .call( d3.drag()
                 .on('start', started)
                 .on('drag', dragged)
-                .on('end', ended) )
-            .call( zoom );
+                .on('end', ended) );
 
         // figure out some dimensions
         let band = sourceScale.bandwidth();
@@ -86,8 +96,9 @@ function createLadder( svg, id, left, top, width, height, readout ) {
             .text( function(d) {return d.id;} )
             .attr( 'anchor', 'start' )
             .attr( 'font-size', font )
-            .attr( 'x', left )//+ font )
-            .attr( 'y', function(d) {return sourceScale(d.id) + font;} );
+            .attr( 'x', left + b )
+            .attr( 'y', function(d) {return sourceScale(d.id) + font;} )
+            .call( zoom );
         
         // now update dimensions of pre-existing sources
         legs.selectAll( 'rect' )
@@ -98,7 +109,7 @@ function createLadder( svg, id, left, top, width, height, readout ) {
 
         legs.selectAll( 'text' ) // is this nested selecting performant?
             .attr( 'font-size', font )
-            .attr( 'x', left )//+ font )
+            .attr( 'x', left + b )
             .attr( 'y', function(d) {return sourceScale(d.id) + font;} );
 
         // merge the selections back together so it is ready for the next render
@@ -127,8 +138,7 @@ function createLadder( svg, id, left, top, width, height, readout ) {
                     return `M${x-r},${y1+band} V${y2} L${x},${y2+b} L${x+r},${y2} V${y1+band} Z`;
                 else // up
                     return `M${x-r},${y1} V${y2+band} L${x},${y2+b} L${x+r},${y2+band} V${y1} Z`;
-            } ).call( readout );
-        // might consider id'ing rungs 
+            } ).call( readout ); // might consider id'ing rungs 
     }
 
     // callbacks for source dragging
@@ -149,26 +159,28 @@ function createLadder( svg, id, left, top, width, height, readout ) {
 
     /** Mouse wheel callback for resizing ladder diagram proportions. */
     function resizeBand( data, index, selection ) {
-        // update the source scale's padding
-        let density = sourceScale.paddingInner();
-        let dW = d3.event.sourceEvent.deltaY;
-        if (dW>0) {
-            if (density<0.95)
-                density += 0.05;
-        } else if (dW<0) {
-            if (density>0.05)
-                density -= 0.05;
-        }
-        sourceScale.paddingInner( density );
+
+        // set the padding directly from the zoom transform's scale
+        let k = d3.event.transform.k;
+        sourceScale.paddingInner( k );
+        // proportion will jump when multiple zoom behaviors are combined.
+        // console.log( k ); we either need to cache band zooms or go back to manually tracking proportion...
 
         // re-render
         ladder();
     }
 
-    /** D3 style chaining, setter/getter */
+    /** D3 style chaining setter/getter for current time. if an argument isn't supplied, returns the current time.
+     * Otherwise sets the time and returns the ladder object for chaining. */
+    ladder.currentTime = function( t ) {
+        if (!t) return time;
+        time = t;
+        return ladder;
+    }
+
+    /** D3 style chaining, setter/getter for buffered interval duration. */
     ladder.interval = function( i ) {
-        if (!i)
-            return duration;
+        if (!i) return duration;
         duration = i;
         return ladder;
     }
@@ -200,14 +212,8 @@ function createLadder( svg, id, left, top, width, height, readout ) {
         if (events.length>0) {
             time = events[events.length-1].time;
             duration = time - events[0].time;
-            timeScale.domain( [events[0].time, time] );
         }
-        else {
-            time = 1;
-            duration = 1;
-            timeScale.domain( [0.0, 1.0] );
-        }
-
+        
         return ladder;
     }
 
@@ -216,23 +222,9 @@ function createLadder( svg, id, left, top, width, height, readout ) {
         // add the given event
         events.push(event);
 
-        // update time scale's domain
+        // update the time
         time = event.time;
-        let expire = time-duration;
-        timeScale.domain( [expire, time] );//[events[0].time, events[events.length-1].time] );
-
-        // remove expired events
-        while (events.length > 0 && events[0].time < expire)
-            events.shift();
-    }
-
-    /** if an argument isn't supplied, returns the current time.
-     * Otherwise sets the time and returns the ladder object for chaining. */
-    ladder.currentTime = function( t ) {
-        if (!t) return time;
-        time = t;
-        // todo remove events which have timed out
-    }
+    } // we might just want to drop this functionality entirely; perhaps another object should be responsible for filtering and sliding time windows...
 
     // While ommiting this will make the component less flexible, we control the data so there's no point in this extra indirection for us...
     // /** Sets the method used to access sources' ids. */
