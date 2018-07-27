@@ -3,6 +3,7 @@
     <head>
         <title>Ladder Diagram Test</title>
         <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+        <!--link rel="stylesheet" href="../site.css" /-->
         <style> /*http://colorbrewer2.org/#type=sequential&scheme=YlGnBu&n=6*/
             #legs rect { stroke: none; }
             #legs text {
@@ -17,11 +18,20 @@
             .supervisor { fill: #41b6c4; }
             .representative { fill: #2c7fb8; }
             .customer { fill: #253494; }
+
+            .user { fill: lightslategrey; }
+            #legs g.user text { fill: darkslategrey; }
+            .agent { fill: darkslategrey; }
+            #legs g.agent text { fill: lightslategrey; }
             
             #rungs path { stroke: none; }
             .request { fill: goldenrod; }
             .accept { fill: green; }
             .reject { fill: red; }
+
+            .msg { fill: royalblue; }
+            .reply { fill: red; }
+            .session { fill: rebeccapurple; }
             
             .readout {
                 font-size: 15px;
@@ -37,11 +47,56 @@
         </style>
     </head>
     <body>
-        <svg width="1000" height="400"></svg>
+        <section>
+            <span>A ladder diagram using the <a target="_base" href="https://d3js.org/">D3</a> component idiom. Plots messages between different sources. Sources must have 'id' and 'class' attributes. Messages must have 'time', 'class', 'source', and 'target' attributes. Class attributes are added to SVG elements so they can be styled with CSS. Here I use a color scheme from <a target="_base" href="http://colorbrewer2.org/#type=sequential&scheme=YlGnBu&n=6">Cynthia Brewer</a>. </span>
+            <span>The first dataset is meant to simulate an undisciplined chain of command. I still need to add source reordering and zoom controls. I was also toying with the idea of adding small plots or horizon charts on each sourceline- though that might make it too busy to be useful...</span>
+        </section>
+        <section>
+            <svg id="chain" width="800" height="320"></svg>
+        </section>
+        <section>
+            <span>The second dataset represents a <a href="https://en.wikipedia.org/wiki/Session_Initiation_Protocol">SIP call flow</a>. Hover over ladder rungs for more information.</span>
+        </section>
+        <section>
+            <svg id="sip" width="600" height="600"></svg>
+        </section>
+        
         <script src="https://d3js.org/d3.v4.js"></script>
-        <script src="../src/ladder.js"></script>
-        <script src="../src/readout.js"></script>
+        <script src="ladder.js"></script>
+        <script src="readout.js"></script>
         <script type="text/javascript">
+
+            let readout = createReadout();
+
+            let sipsvg = d3.selectAll('svg#sip');
+            let sip = createLadder( sipsvg, 'sip', 0, 0, 600, 300, readout )
+                .sources( [
+                    {id:'Alice', class:'user'},
+                    {id:'Server', class:'agent'},
+                    {id:'Proxy', class:'agent'},
+                    {id:'Boris', class:'user'}
+                ] )
+                .events( [
+                    {time:040, source:'Alice', target:'Server', class:'msg Invite'},
+                    {time:080, source:'Server', target:'Alice', class:'reply Moved(302)'},
+                    {time:120, source:'Alice', target:'Server', class:'msg Ack'},
+                    {time:160, source:'Alice', target:'Proxy', class:'msg Invite'},
+                    {time:200, source:'Proxy', target:'Boris', class:'msg Invite'},
+                    {time:240, source:'Proxy', target:'Alice', class:'reply Trying'},
+                    {time:280, source:'Boris', target:'Proxy', class:'reply Ringing'},
+                    {time:320, source:'Proxy', target:'Alice', class:'reply Ringing'},
+                    {time:360, source:'Boris', target:'Proxy', class:'reply OK'},
+                    {time:400, source:'Proxy', target:'Alice', class:'reply OK'},
+                    {time:440, source:'Alice', target:'Proxy', class:'msg Ack'},
+                    {time:480, source:'Proxy', target:'Boris', class:'msg Ack'},
+                    {time:520, source:'Alice', target:'Boris', class:'session Media(RTP)'},
+                    {time:560, source:'Boris', target:'Proxy', class:'msg Bye'},
+                    {time:600, source:'Proxy', target:'Alice', class:'msg Bye'},
+                    {time:640, source:'Alice', target:'Proxy', class:'reply OK(200)'},
+                    {time:680, source:'Proxy', target:'Boris', class:'reply OK(200)'}
+                ] )
+                .interval( 700 );
+            sip();
 
             sources = [
                 { id:'Alice', class:"technician" },
@@ -53,6 +108,10 @@
             ];
             events = [
                 {time:0, class: 'request', source: 'Alice', target: 'Bob', origin:'Alice'}
+                // {time:0, class: 'request', source:'Fanny', target: 'Donna'},
+                // {time:1, class: 'request', source:'Fanny', target: 'Bob'},
+                // {time:2, class: 'accept', source:'Donna', target: 'Fanny'},
+                // {time:3, class: 'reject', source:'Bob', target: 'Fanny'}
             ];
 
             let getSuperior = function ( name ) {
@@ -65,12 +124,11 @@
                 return (n!=-1 && n!=0) ? sources[n-1] : null;
             }
 
-            let svg = d3.selectAll('svg');
-            let readout = createReadout();
-            let ladder = createLadder( svg, 'test', 0, 0, 1000, 300, readout)
+            let svg = d3.selectAll('svg#chain');
+            let ladder = createLadder( svg, 'test', 0, 0, 800, 300, readout)
                 .sources( sources )
                 .events ( events )
-                .interval( 100 );
+                .interval( 200 );
             ladder();
 
             // A little generator that simulates requests in a chain of command
@@ -116,12 +174,10 @@
                 }
                 
                 // add the message and update the diagram...
-                // events.push( event );
-                // ladder.events( events );
                 ladder.add( event );
                 ladder();
                 
-            }, 1000);
+            }, 3000);
             
         </script>
     </body>

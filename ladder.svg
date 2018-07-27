@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+    <g class="ladder" id="test">
+        <g id="legs">
+            <g class="mechanic">
+            <rect x="0" y="172" width="200" height="26" style="stroke:none; fill:#c7e9b4"/>
+            <text font-size="19.5px" x="13" y="191.5" anchor="start">Bob</text>
+            </g>
+            <g class="supervisor">
+            <rect x="0" y="86" width="200" height="26" style="stroke:none; fill:#41b6c4"/>
+            <text font-size="19.5px" x="13" y="105.5" anchor="start">Donna</text>
+            </g>
+            <g class="customer">
+            <rect x="0" y="0" width="200" height="26" style="stroke:none; fill:#253494"/>
+            <text font-size="19.5px" x="13" y="19.5" anchor="start">Fanny</text>
+            </g>
+        </g>
+        <g id="rungs">
+            <path class="request" d="M -13 26 V 86 L 0 99 L 13 86 V 26 Z" style="stroke:none; fill:goldenrod"/>
+            <path class="request" d="M 54 26 V 172 L 67 185 L 80 172 V 26 Z" style="stroke:none; fill:goldenrod"/>
+            <path class="accept" d="M 120 86 V 26 L 133 13 L 146 26 V 86 Z" style="stroke:none; fill:green"/>
+            <path class="reject" d="M 187 172 V 26 L 200 13 L 213 26 V 172 Z" style="stroke:none; fill:red"/>
+        </g>
+    </g>
+</svg>
