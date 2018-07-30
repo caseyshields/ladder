@@ -13,9 +13,9 @@ Ladder diagrams are useful for showing a sequence of messages between actors ove
     let svg = d3.selectAll('svg');
     let lad = createLadder( svg, 0, 0, 256, 256, pop)
         .sources( [
-            {id:'Fanny' class:'supervisor'},
-            {id:'Donna' class:'subordinate'},
-            {id:'Bob' class:'subordinate'} ] )
+            {id:'Fanny', class:'supervisor'},
+            {id:'Donna', class:'subordinate'},
+            {id:'Bob', class:'subordinate'} ] )
         .events( [
             {time:0, source:'Fanny', target:'Donna', class:'request'},
             {time:85, source:'Fanny', target:'Bob', class:'request'},
@@ -81,6 +81,7 @@ event[n].class|string|name of the css class to apply to the SVG group representi
 
 ## Future Plans
 
+ - [ ] Make the axis orientation customizable!
  - [ ] Make the sources re-orderable in an efficient manner
  - [ ] Add brushes for modifing the time axis
  - [ ] Add the ability to collapse sources into groups...
