@@ -136,7 +136,7 @@
                 let last = events[events.length-1];
                 let event = null;
                 
-                let t = last.time + 1 + Math.random()*8;//elapsed //d3.now();
+                let t = last.time + 8 + Math.random()*8;//elapsed //d3.now();
 
                 // if a request hasn't been answered
                 if (last.class=='request') {
@@ -177,7 +177,7 @@
                 ladder.add( event );
                 ladder();
                 
-            }, 3000);
+            }, 1000);
             
         </script>
     </body>
