@@ -13,6 +13,9 @@ function createLadder( svg, id, left, top, width, height, readout ) {
         .attr( 'id', id )
         .attr( 'class', 'ladder' );
     
+    let axis = group.append( 'g' )
+        .attr( 'id', 'axis' );
+        
     let legs = group.append( 'g' )
         .attr( 'id', 'legs' )
         .selectAll('g');
@@ -20,9 +23,6 @@ function createLadder( svg, id, left, top, width, height, readout ) {
     let rungs = group.append( 'g' )
         .attr( 'id', 'rungs' )
         .selectAll('g');
-
-    let axis = group.append( 'g' )
-        .attr( 'id', 'axis' );
 
     // create the time axis
     let timeScale = d3.scaleLinear()
