@@ -1,4 +1,6 @@
 
+export default createLadder;
+
 /** Factory function which returns a d3 component for drawing ladder diagrams.
  * Sources are expected to have 'id' and 'class' attributes.
  * Events are expected to have 'class', 'source', and 'target' attributes. */

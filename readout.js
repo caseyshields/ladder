@@ -1,3 +1,6 @@
+
+export default createReadout;
+
 /** Factory function for a detail pop-up which shows a json serialization of objects it's listening to. */
 function createReadout( ) {
 

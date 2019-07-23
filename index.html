@@ -52,24 +52,24 @@
             <span>The first dataset is meant to simulate an undisciplined chain of command. I still need to add source reordering and zoom controls. I was also toying with the idea of adding small plots or horizon charts on each sourceline- though that might make it too busy to be useful...</span>
         </section>
         <section>
-            <svg id="chain" viewbox="0 0 800 320" preserveAspectRatio="XMidYMid meet"></svg>
+            <svg id="chain" viewbox="0 0 800 320" preserveAspectRatio="xMidYMid meet" width="700"></svg>
         </section>
         <section>
             <span>The second dataset represents a <a href="https://en.wikipedia.org/wiki/Session_Initiation_Protocol">SIP call flow</a>. Hover over ladder rungs for more information.</span>
         </section>
         <section>
-            <svg id="sip" viewbox="0 0 600 600" preserveAspectRatio="XMidYMid meet"></svg>
+            <svg id="sip" viewbox="0 0 600 600" preserveAspectRatio="xMidYMid meet" width="700"></svg>
         </section>
         
         <script src="https://d3js.org/d3.v4.js"></script>
-        <script src="ladder.js"></script>
-        <script src="readout.js"></script>
-        <script type="text/javascript">
+        <script type="module">
+            import Ladder from './ladder.js';
+            import Readout from './readout.js';
 
-            let readout = createReadout();
+            let readout = Readout();
 
             let sipsvg = d3.selectAll('svg#sip');
-            let sip = createLadder( sipsvg, 'sip', 0, 0, 600, 300, readout )
+            let sip = Ladder( sipsvg, 'sip', 0, 0, 600, 300, readout )
                 .sources( [
                     {id:'Alice', class:'user'},
                     {id:'Server', class:'agent'},
@@ -77,8 +77,8 @@
                     {id:'Boris', class:'user'}
                 ] )
                 .events( [
-                    {time:040, source:'Alice', target:'Server', class:'msg Invite'},
-                    {time:080, source:'Server', target:'Alice', class:'reply Moved(302)'},
+                    {time:40, source:'Alice', target:'Server', class:'msg Invite'},
+                    {time:80, source:'Server', target:'Alice', class:'reply Moved(302)'},
                     {time:120, source:'Alice', target:'Server', class:'msg Ack'},
                     {time:160, source:'Alice', target:'Proxy', class:'msg Invite'},
                     {time:200, source:'Proxy', target:'Boris', class:'msg Invite'},
@@ -98,7 +98,7 @@
                 .interval( 700 );
             sip();
 
-            sources = [
+            const sources = [
                 { id:'Alice', class:"technician" },
                 { id:'Bob', class:"mechanic" },
                 { id:'Caleb', class:"engineer" },
@@ -106,7 +106,7 @@
                 { id:'Eric', class:"representative" },
                 { id:'Fanny', class:"customer" }
             ];
-            events = [
+            let events = [
                 {time:0, class: 'request', source: 'Alice', target: 'Bob', origin:'Alice'}
                 // {time:0, class: 'request', source:'Fanny', target: 'Donna'},
                 // {time:1, class: 'request', source:'Fanny', target: 'Bob'},
@@ -125,7 +125,7 @@
             }
 
             let svg = d3.selectAll('svg#chain');
-            let ladder = createLadder( svg, 'test', 0, 0, 800, 300, readout)
+            let ladder = Ladder( svg, 'test', 0, 0, 800, 300, readout)
                 .sources( sources )
                 .events ( events )
                 .interval( 200 );
@@ -151,7 +151,7 @@
                     }
                     // otherwise they pass it up the chain
                     else {
-                        superior = getSuperior( last.target );
+                        const superior = getSuperior( last.target );
                         event = { time:t, class:'request', source:last.target, target:superior.id, origin:last.origin };
                     }
 
