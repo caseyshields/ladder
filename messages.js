@@ -2,7 +2,17 @@
  * 
  */
 export default function (selection, timeScale, sourceScale) {
-
+// TODO though hypothetically you could use this with any container that sported a timescale, bandscale and source index, I think I just make it take Timeline as an arg...
+    /**
+     * 
+``` json
+message = {
+    class: "",
+    source: "",
+    target: "",
+}
+```
+     */
     function messages(data) {
 
         // cache dataset for refreshes

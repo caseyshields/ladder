@@ -1,11 +1,5 @@
 /** A Container Component for showing the messaging interactions of agents 
  * over time.
-``` json
-agent = {
-    id: "A unique, concise String",
-    class: "The class of the "
-}
-```
 */
 export default function(selection) {
 
@@ -26,8 +20,9 @@ export default function(selection) {
     let timeAxis = d3.axisBottom( timeScale )
         .tickSize( height );
 
-    let sourceScale = d3.scaleBand()
+    let agentScale = d3.scaleBand()
         .range( [height, 0] )
+        .domain( [] )
         .round( true )
         .paddingInner( 0.7 )
         .align( 0.0 );
@@ -38,30 +33,55 @@ export default function(selection) {
     
     function timeline(data) {
 
+        // update time domain
+        let expire = time - duration;
+        timeScale.domain( [expire, time] );
+    
+        // remove expired events
+        while (events.length > 0
+            && events[0].time < expire)
+        events.shift();
+
+        // draw the time axis
+        axis.call( timeAxis );
+
+        // TODO draw each component layer...
     }
 
-    timeline.timecale = function(scale) {
+    timeline.timeScale = function(scale) {
         if (scale==undefined)
             return timeScale;
         timeScale = scale;
         return timeline;
     }
 
-    timeline.sourceScale = function(scale) {
+    timeline.agentScale = function(scale) {
         if (scale==undefined)
-            return sourceScale;
-        sourceScale = scale;
+            return agentScale;
+        agentScale = scale;
         return timeline;
     }
 
     /** Makes the Source visible in the timeline */
-    timeline.showSource = function(source) {
-
+    timeline.showAgent = function(agent) {
+        let domain = agentScale.domain();
+        if (domain.includes( agent ))
+            ;// move to top?
+        else {
+            domain.push( agent );
+            agentScale.domain( domain );
+        }
     }
 
     /** Hides the source */
-    timeline.hidSource = function(source) {
-
+    timeline.hideAgent = function(agent) {
+        let domain = agentScale.domain();
+        let n = domain.findIndex( d=>d.id==agent )
+        if (n>-1) {
+            domain.copywithin(n, n+1, domain.length);
+            domain.pop();
+            agentScale.domain( domain );
+        }
     }
 
     return timeline;
