@@ -12,8 +12,8 @@ export default function(selection) {
     /** The currently visible sources in the order they will visually appear. */
     let agents = [];
     
-    /** The events in the buffered time window */
-    let events = [];
+    // /** The events in the buffered time window */
+    // let events = []; // this should be handled seperately
 
     let timeScale = d3.scaleLinear()
         .range( [0,width] );
@@ -37,10 +37,10 @@ export default function(selection) {
         let expire = time - duration;
         timeScale.domain( [expire, time] );
     
-        // remove expired events
-        while (events.length > 0
-            && events[0].time < expire)
-        events.shift();
+        // // remove expired events
+        // while (events.length > 0
+        //     && events[0].time < expire)
+        // events.shift();
 
         // draw the time axis
         axis.call( timeAxis );
