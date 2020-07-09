@@ -1,5 +1,6 @@
 /** A Component for visualizing an agent on a timeline.
- * 
+ * @param {Object} timescale - A D3 LinearScale for the time axis
+ * @param {Object} sourcescale - A D3 Band Scale for the agent axis 
 */
 export default function(selection, timescale, sourcescale) {
 
@@ -34,7 +35,7 @@ agent = {
 
         let band = sourceScale.bandwidth();
         let pad = sourceScale.paddingInner();
-        let font = band*0.75;
+        let font = band * 0.75;
         let b = band / 2.0; // band half-width
         let r = band / 2.0; // rung half-width
         // TODO just center the dang text...
