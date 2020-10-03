@@ -1,8 +1,11 @@
-/** A Component for visualizing an agent on a timeline.
- * @param {Object} timescale - A D3 LinearScale for the time axis
- * @param {Object} sourcescale - A D3 Band Scale for the agent axis 
+/** A Component for visualizing an actor on a timeline.
 */
-export default function(selection, timescale, sourcescale) {
+export default function() {
+    
+    let identifier = d=>d.id;
+    let classifier = d=>d.classy;
+    let timeScale;
+    let sourceScale;
 
     /** Render method draws a labled bar with embedded filter controls
      * 
@@ -13,7 +16,7 @@ agent = {
 }
 ```
     */
-    function agents(data) {
+    function agents(selection, data) {
 
         // cache the data for subsequent refreshes
         selection.datum(data);
@@ -50,7 +53,7 @@ agent = {
             .text( d => d.id )
             .attr( 'font-size', band/2 )
             .attr( 'x', pad )
-            .attr( 'y', d=>souceScale(d.id) );
+            .attr( 'y', d=>sourceScale(d.id) );
             // in the CSS don't forget;
             // text-anchor : middle;
             // dominant-baseline : middle;
@@ -61,5 +64,21 @@ agent = {
             // TODO should I just use a transform on the group instead of manipulating their attributes directly?
     }
 
-    return agent;
+    /** @param {Object} t - Undefined or a D3 LinearScale for the time axis */
+    agents.timeScale = function(t) {
+        if (arguments.length==0)
+            return timeScale;
+        timeScale = t;
+        return agents;
+    }
+
+    /** @param {Object} s - Undefined or a D3 Band Scale for the agent axis  */
+    agents.sourceScale = function(s) {
+        if (arguments.length==0)
+            return sourceScale;
+        sourceScale = s;
+        return agents;
+    }
+
+    return agents;
 }
