@@ -37,7 +37,10 @@ export default function() {
 
         let layers = selection
                 .selectAll('g')
-                .data( data );
+                // .data( data );
+                .data( data, function(d) {
+                    return d ? d.classy : d3.select(this).attr('class');
+                } );
         
         // remove layers with no corresponding data
         layers.exit().remove()

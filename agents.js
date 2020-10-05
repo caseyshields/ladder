@@ -43,7 +43,7 @@ agent = {
         let r = band / 2.0; // rung half-width
         // TODO just center the dang text...
 
-        let bar = newagency.append('rectangle')
+        let bar = newagency.append('rect')
             .attr( 'x', x )
             .attr( 'y', function(d) {return sourceScale(d.id);} )
             .attr( 'width', width )

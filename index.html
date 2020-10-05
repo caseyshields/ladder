@@ -94,14 +94,6 @@
 
             let state = [
                 {
-                    classy: 'actors',
-                    data : [
-                        {id:'Alice', classy:'user'},
-                        {id:'Server', classy:'agent'},
-                        {id:'Proxy', classy:'agent'},
-                        {id:'Boris', classy:'user'}
-                    ]
-                }, {
                     classy : 'messages',
                     data : [
                     {time:40, source:'Alice', target:'Server', class:'msg Invite'},
@@ -122,6 +114,14 @@
                     {time:640, source:'Alice', target:'Proxy', class:'reply OK(200)'},
                     {time:680, source:'Proxy', target:'Boris', class:'reply OK(200)'}
                     ]
+                }, {
+                    classy: 'actors',
+                    data : [
+                        {id:'Alice', classy:'user'},
+                        {id:'Server', classy:'agent'},
+                        {id:'Proxy', classy:'agent'},
+                        {id:'Boris', classy:'user'}
+                    ]
                 }
             ];
 
@@ -130,13 +130,14 @@
                 .width(600)
                 .height(300)
                 .interval([0,700])
-                .agents(state[0].data);
-            sip.addLayer('actors', Agents()
-                    .timeScale( sip.timeScale )
-                    .sourceScale( sip.agentScale ) );
+                .agents(state[1].data);
             sip.addLayer('messages', Messages()
                     .timeScale( sip.timeScale )
                     .sourceScale( sip.agentScale ) );
+            sip.addLayer('actors', Agents()
+                    .timeScale( sip.timeScale )
+                    .sourceScale( sip.agentScale ) );
+            
             sip(sipsvg, state);
             // let sip = Ladder( sipsvg, 'sip', 0, 0, 600, 300, readout )
             //     .sources( [
