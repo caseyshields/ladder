@@ -106,8 +106,17 @@ export default function() {
         return timeline;
     } // TODO provide some search and order changing methods for the agents?...
 
-    timeline.timeScale = function() { return timeScale; }
-    timeline.agentScale = function() { return agentScale; }
+    timeline.timeScale = timeScale;
+    timeline.agentScale = agentScale;
+
+    timeline.toScreen = function(time, source) {
+        return [timeScale(time), sourceScale(source)];
+    }
+
+    timeline.toSource = function(x,y) {
+        return [timeScale.inverse(x), sourceScale.inverse(y)];
+    }
+
     return timeline;
 }
 

@@ -85,20 +85,42 @@
         <script src="https://d3js.org/d3.v4.js"></script>
         <script type="module">
             import Ladder from './ladder.js';
-            import Readout from './readout.js';
+            // import Readout from './readout.js';
             import Timeline from './timeline.js';
             import Agents from './agents.js';
+            import Messages from './messages.js';
 
-            let readout = Readout();
+            // let readout = Readout();
 
             let state = [
                 {
                     classy: 'actors',
                     data : [
-                        {id:'Alice', class:'user'},
-                        {id:'Server', class:'agent'},
-                        {id:'Proxy', class:'agent'},
-                        {id:'Boris', class:'user'}
+                        {id:'Alice', classy:'user'},
+                        {id:'Server', classy:'agent'},
+                        {id:'Proxy', classy:'agent'},
+                        {id:'Boris', classy:'user'}
+                    ]
+                }, {
+                    classy : 'messages',
+                    data : [
+                    {time:40, source:'Alice', target:'Server', class:'msg Invite'},
+                    {time:80, source:'Server', target:'Alice', class:'reply Moved(302)'},
+                    {time:120, source:'Alice', target:'Server', class:'msg Ack'},
+                    {time:160, source:'Alice', target:'Proxy', class:'msg Invite'},
+                    {time:200, source:'Proxy', target:'Boris', class:'msg Invite'},
+                    {time:240, source:'Proxy', target:'Alice', class:'reply Trying'},
+                    {time:280, source:'Boris', target:'Proxy', class:'reply Ringing'},
+                    {time:320, source:'Proxy', target:'Alice', class:'reply Ringing'},
+                    {time:360, source:'Boris', target:'Proxy', class:'reply OK'},
+                    {time:400, source:'Proxy', target:'Alice', class:'reply OK'},
+                    {time:440, source:'Alice', target:'Proxy', class:'msg Ack'},
+                    {time:480, source:'Proxy', target:'Boris', class:'msg Ack'},
+                    {time:520, source:'Alice', target:'Boris', class:'session Media(RTP)'},
+                    {time:560, source:'Boris', target:'Proxy', class:'msg Bye'},
+                    {time:600, source:'Proxy', target:'Alice', class:'msg Bye'},
+                    {time:640, source:'Alice', target:'Proxy', class:'reply OK(200)'},
+                    {time:680, source:'Proxy', target:'Boris', class:'reply OK(200)'}
                     ]
                 }
             ];
@@ -110,8 +132,11 @@
                 .interval([0,700])
                 .agents(state[0].data);
             sip.addLayer('actors', Agents()
-                    .timeScale( sip.timeScale() )
-                    .sourceScale( sip.agentScale() ) );
+                    .timeScale( sip.timeScale )
+                    .sourceScale( sip.agentScale ) );
+            sip.addLayer('messages', Messages()
+                    .timeScale( sip.timeScale )
+                    .sourceScale( sip.agentScale ) );
             sip(sipsvg, state);
             // let sip = Ladder( sipsvg, 'sip', 0, 0, 600, 300, readout )
             //     .sources( [
@@ -142,86 +167,86 @@
             //     .interval( 700 );
             // sip();
 
-            const sources = [
-                { id:'Alice', class:"technician" },
-                { id:'Bob', class:"mechanic" },
-                { id:'Caleb', class:"engineer" },
-                { id:'Donna', class:"supervisor" },
-                { id:'Eric', class:"representative" },
-                { id:'Fanny', class:"customer" }
-            ];
-            let events = [
-                {time:0, class: 'request', source: 'Alice', target: 'Bob', origin:'Alice'}
-                // {time:0, class: 'request', source:'Fanny', target: 'Donna'},
-                // {time:1, class: 'request', source:'Fanny', target: 'Bob'},
-                // {time:2, class: 'accept', source:'Donna', target: 'Fanny'},
-                // {time:3, class: 'reject', source:'Bob', target: 'Fanny'}
-            ];
+            // const sources = [
+            //     { id:'Alice', class:"technician" },
+            //     { id:'Bob', class:"mechanic" },
+            //     { id:'Caleb', class:"engineer" },
+            //     { id:'Donna', class:"supervisor" },
+            //     { id:'Eric', class:"representative" },
+            //     { id:'Fanny', class:"customer" }
+            // ];
+            // let events = [
+            //     {time:0, class: 'request', source: 'Alice', target: 'Bob', origin:'Alice'}
+            //     // {time:0, class: 'request', source:'Fanny', target: 'Donna'},
+            //     // {time:1, class: 'request', source:'Fanny', target: 'Bob'},
+            //     // {time:2, class: 'accept', source:'Donna', target: 'Fanny'},
+            //     // {time:3, class: 'reject', source:'Bob', target: 'Fanny'}
+            // ];
 
-            let getSuperior = function ( name ) {
-                let n = sources.findIndex( function(d) {return d.id==name;} );
-                return (n!=-1 && n!=sources.length-1) ? sources[n+1] : null;
-            };
+            // let getSuperior = function ( name ) {
+            //     let n = sources.findIndex( function(d) {return d.id==name;} );
+            //     return (n!=-1 && n!=sources.length-1) ? sources[n+1] : null;
+            // };
 
-            let getSubordinate = function( name ) {
-                let n = sources.findIndex( function(d) {return d.id==name;} );
-                return (n!=-1 && n!=0) ? sources[n-1] : null;
-            }
+            // let getSubordinate = function( name ) {
+            //     let n = sources.findIndex( function(d) {return d.id==name;} );
+            //     return (n!=-1 && n!=0) ? sources[n-1] : null;
+            // }
 
-            let svg = d3.selectAll('svg#chain');
-            let ladder = Ladder( svg, 'test', 0, 0, 800, 300, readout)
-                .sources( sources )
-                .events ( events )
-                .interval( 200 );
-            ladder();
+            // let svg = d3.selectAll('svg#chain');
+            // let ladder = Ladder( svg, 'test', 0, 0, 800, 300, readout)
+            //     .sources( sources )
+            //     .events ( events )
+            //     .interval( 200 );
+            // ladder();
 
-            // A little generator that simulates requests in a chain of command
-            d3.interval( function(elapsed) {
-                let last = events[events.length-1];
-                let event = null;
+            // // A little generator that simulates requests in a chain of command
+            // d3.interval( function(elapsed) {
+            //     let last = events[events.length-1];
+            //     let event = null;
                 
-                let t = last.time + 8 + Math.random()*8;//elapsed //d3.now();
+            //     let t = last.time + 8 + Math.random()*8;//elapsed //d3.now();
 
-                // if a request hasn't been answered
-                if (last.class=='request') {
+            //     // if a request hasn't been answered
+            //     if (last.class=='request') {
                     
-                    // half the time the superior knows the answer, Fanny always knows the answer
-                    if (Math.random()<0.5 || last.target=='Fanny') {
-                        // 3/4ths the time the answer is permissive
-                        if(Math.random()<0.75)
-                            event = { time:t, class:'accept', source:last.target, target:last.source, origin:last.origin };
-                        else
-                            event = { time:t, class:'reject', source:last.target, target:last.source, origin:last.origin };
-                    }
-                    // otherwise they pass it up the chain
-                    else {
-                        const superior = getSuperior( last.target );
-                        event = { time:t, class:'request', source:last.target, target:superior.id, origin:last.origin };
-                    }
+            //         // half the time the superior knows the answer, Fanny always knows the answer
+            //         if (Math.random()<0.5 || last.target=='Fanny') {
+            //             // 3/4ths the time the answer is permissive
+            //             if(Math.random()<0.75)
+            //                 event = { time:t, class:'accept', source:last.target, target:last.source, origin:last.origin };
+            //             else
+            //                 event = { time:t, class:'reject', source:last.target, target:last.source, origin:last.origin };
+            //         }
+            //         // otherwise they pass it up the chain
+            //         else {
+            //             const superior = getSuperior( last.target );
+            //             event = { time:t, class:'request', source:last.target, target:superior.id, origin:last.origin };
+            //         }
 
-                // pass answers back down the chain of command
-                } else {
-                    // if the originator hasn't recieved the answer, pass it to the subordinate
-                    if (last.target!=last.origin) {
-                        let subordinate = getSubordinate( last.target );
-                        event = { time:t, class:last.class, source:last.target, target:subordinate.id, origin:last.origin};
-                    }
-                    // otherwise randomly generate a new request
-                    else {
-                        let r1 = Math.floor(Math.random()*(sources.length-1));
-                        let origin = sources[ r1 ];
-                        let r2 = r1 +1 + Math.floor(Math.random()*(sources.length-r1-1));
-                        let superior = sources[ r2 ];
-                        //let superior = getSuperior( origin.id );
-                        event = { time:t, class:'request', source: origin.id, target:superior.id, origin:origin.id};
-                    }
-                }
+            //     // pass answers back down the chain of command
+            //     } else {
+            //         // if the originator hasn't recieved the answer, pass it to the subordinate
+            //         if (last.target!=last.origin) {
+            //             let subordinate = getSubordinate( last.target );
+            //             event = { time:t, class:last.class, source:last.target, target:subordinate.id, origin:last.origin};
+            //         }
+            //         // otherwise randomly generate a new request
+            //         else {
+            //             let r1 = Math.floor(Math.random()*(sources.length-1));
+            //             let origin = sources[ r1 ];
+            //             let r2 = r1 +1 + Math.floor(Math.random()*(sources.length-r1-1));
+            //             let superior = sources[ r2 ];
+            //             //let superior = getSuperior( origin.id );
+            //             event = { time:t, class:'request', source: origin.id, target:superior.id, origin:origin.id};
+            //         }
+            //     }
                 
-                // add the message and update the diagram...
-                ladder.add( event );
-                ladder();
+            //     // add the message and update the diagram...
+            //     ladder.add( event );
+            //     ladder();
                 
-            }, 1000);
+            // }, 1000);
             
         </script>
     </body>

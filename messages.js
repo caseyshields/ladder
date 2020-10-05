@@ -2,8 +2,12 @@
  * @param {Object} timeScale - A D3 LinearScale mapping time onto the time axis
  * @param {Object} sourceScale - A D3 Band Scale mapping agents onto the agent axis
  */
-export default function (selection, timeScale, sourceScale) {
-// TODO though hypothetically you could use this with any container that sported a timescale, bandscale and source index, I think I just make it take Timeline as an arg...
+export default function () {//(selection, timeScale, sourceScale) {
+
+    let classifier = d=>d.id;
+    let timeScale;
+    let sourceScale;
+
     /**
      * 
 ``` json
@@ -14,13 +18,20 @@ message = {
 }
 ```
      */
-    function messages(data) {
+    function messages(selection, data) {
 
         // cache dataset for refreshes
         selection.datum( data );
 
+        // figure out some dimensions
+        let band = sourceScale.bandwidth();
+        let b = band / 2.0; // band half-width
+        let r = band / 2.0; // rung half-width
+
         // D3 General Update Pattern
-        let arrows = selection.select('.message').data(data)
+        let arrows = selection
+                .selectAll('.message')
+                .data(data);
         arrows.exit().remove();
         arrows = arrows.enter()
             .append('path')
@@ -35,6 +46,20 @@ message = {
                     else // up
                         return `M${x-r},${y1} V${y2+band} L${x},${y2+b} L${x+r},${y2+band} V${y1} Z`;
                 });
+    }
+
+    messages.timeScale = function(t) {
+        if (arguments.length==0)
+            return timeScale;
+        timeScale = t;
+        return messages;
+    }
+
+    messages.sourceScale = function(s) {
+        if (arguments.length==0)
+            return sourceScale;
+        sourceScale = s;
+        return messages;
     }
 
     return messages;
