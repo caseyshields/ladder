@@ -4,9 +4,12 @@
  */
 export default function () {//(selection, timeScale, sourceScale) {
 
-    let classifier = d=>d.id;
+    let classifier = d=>d.class;
     let timeScale;
     let sourceScale;
+
+    let width = d=>sourceScale.bandwidth()/2.0; // one idea is changing width based on message size?
+    let capheight = d=>sourceScale.bandWidth()/2.0;
 
     /**
      * 
@@ -27,6 +30,7 @@ message = {
         let band = sourceScale.bandwidth();
         let b = band / 2.0; // band half-width
         let r = band / 2.0; // rung half-width
+        // TODO make this configurable
 
         // D3 General Update Pattern
         let arrows = selection
@@ -36,7 +40,7 @@ message = {
         arrows = arrows.enter()
             .append('path')
             .merge(arrows)
-                .attr('class', function(d){return d.class;})
+                .attr('class', classifier)
                 .attr('d', function(d) {
                     let x = Math.round(timeScale(d.time));
                     let y1 = sourceScale(d.source);
