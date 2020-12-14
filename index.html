@@ -82,20 +82,15 @@
             it too busy to be useful...
         </p>
         
-        <script src="https://d3js.org/d3.v4.js"></script>
+        <script src="https://d3js.org/d3.v5.js"></script>
         <script type="module">
             import Ladder from './ladder.js';
-            // import Readout from './readout.js';
             import Timeline from './timeline.js';
             import Agents from './agents.js';
             import Messages from './messages.js';
 
-            // let readout = Readout();
-
-            let state = [
-                {
-                    classy : 'messages',
-                    data : [
+            let state = {
+                messages : [
                     {time:40, source:'Alice', target:'Server', class:'msg Invite'},
                     {time:80, source:'Server', target:'Alice', class:'reply Moved(302)'},
                     {time:120, source:'Alice', target:'Server', class:'msg Ack'},
@@ -113,60 +108,28 @@
                     {time:600, source:'Proxy', target:'Alice', class:'msg Bye'},
                     {time:640, source:'Alice', target:'Proxy', class:'reply OK(200)'},
                     {time:680, source:'Proxy', target:'Boris', class:'reply OK(200)'}
-                    ]
-                }, {
-                    classy: 'actors',
-                    data : [
-                        {id:'Alice', classy:'user'},
-                        {id:'Server', classy:'agent'},
-                        {id:'Proxy', classy:'agent'},
-                        {id:'Boris', classy:'user'}
-                    ]
-                }
-            ];
+                ],
+                actors : [
+                    {id:'Alice', classy:'user'},
+                    {id:'Server', classy:'agent'},
+                    {id:'Proxy', classy:'agent'},
+                    {id:'Boris', classy:'user'}
+                ]
+            };
 
-            let sipsvg = d3.selectAll('svg#sip');
+            let svg = d3.selectAll('svg#sip');
             let sip = Timeline()
                 .width(600)
                 .height(300)
                 .interval([0,700])
-                .agents(state[1].data);
+                .agents(state.actors);//[1].data);
             sip.addLayer('messages', Messages()
                     .timeScale( sip.timeScale )
                     .sourceScale( sip.agentScale ) );
             sip.addLayer('actors', Agents()
                     .timeScale( sip.timeScale )
                     .sourceScale( sip.agentScale ) );
-            
-            sip(sipsvg, state);
-            // let sip = Ladder( sipsvg, 'sip', 0, 0, 600, 300, readout )
-            //     .sources( [
-            //         {id:'Alice', class:'user'},
-            //         {id:'Server', class:'agent'},
-            //         {id:'Proxy', class:'agent'},
-            //         {id:'Boris', class:'user'}
-            //     ] )
-            //     .events( [
-            //         {time:40, source:'Alice', target:'Server', class:'msg Invite'},
-            //         {time:80, source:'Server', target:'Alice', class:'reply Moved(302)'},
-            //         {time:120, source:'Alice', target:'Server', class:'msg Ack'},
-            //         {time:160, source:'Alice', target:'Proxy', class:'msg Invite'},
-            //         {time:200, source:'Proxy', target:'Boris', class:'msg Invite'},
-            //         {time:240, source:'Proxy', target:'Alice', class:'reply Trying'},
-            //         {time:280, source:'Boris', target:'Proxy', class:'reply Ringing'},
-            //         {time:320, source:'Proxy', target:'Alice', class:'reply Ringing'},
-            //         {time:360, source:'Boris', target:'Proxy', class:'reply OK'},
-            //         {time:400, source:'Proxy', target:'Alice', class:'reply OK'},
-            //         {time:440, source:'Alice', target:'Proxy', class:'msg Ack'},
-            //         {time:480, source:'Proxy', target:'Boris', class:'msg Ack'},
-            //         {time:520, source:'Alice', target:'Boris', class:'session Media(RTP)'},
-            //         {time:560, source:'Boris', target:'Proxy', class:'msg Bye'},
-            //         {time:600, source:'Proxy', target:'Alice', class:'msg Bye'},
-            //         {time:640, source:'Alice', target:'Proxy', class:'reply OK(200)'},
-            //         {time:680, source:'Proxy', target:'Boris', class:'reply OK(200)'}
-            //     ] )
-            //     .interval( 700 );
-            // sip();
+            sip(svg, state);
 
             // const sources = [
             //     { id:'Alice', class:"technician" },

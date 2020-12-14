@@ -30,17 +30,25 @@ export default function() {
     //     .on('zoom', resizeBand)
     //     .scaleExtent( [0.1, 0.9] );
     
-    function timeline(selection, data) {
+    function timeline(selection, state) {
 
-        // cache a reference to the dataset
-        selection.datum(data);
+        // take the members of data and put them into an array so they can be joined to the selection
+        let names = [];
+        let data = [];
+        for (let name in state) {
+            names.push( name );
+            data.push( state[name] );
+        } // what can cause the attribute iterator to change order?
+
+        // cache a reference to the state at the root DOM node
+        selection.datum(state);
 
         let layers = selection
                 .selectAll('g')
-                // .data( data );
-                .data( data, function(d) {
-                    return d ? d.classy : d3.select(this).attr('class');
-                } );
+                .data( data );
+                // .data( data, function(d) {
+                //     return d ? d.classy : d3.select(this).attr('class');
+                // } );
         
         // remove layers with no corresponding data
         layers.exit().remove()
@@ -48,16 +56,16 @@ export default function() {
         // add new layers in reverse data order so rendering is correct
         layers = layers.enter()
             .insert( 'g', ':first-child' )
-            .attr( 'class', (d)=>d.classy )
+            .attr( 'class', (d,i,g)=>names[i] )
 
         // repaint all the other layers
         .merge( layers )
-            .each( function(d) {
+            .each( function(d,i,g) {
 
                 // recurse on every component
                 let parent = d3.select(this);
-                let component = components[d.classy];
-                component( parent, d.data)
+                let component = components[names[i]];//d.classy];
+                component( parent, d );//.data )
 
             });
 
